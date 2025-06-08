@@ -52,6 +52,22 @@
 
     <div class="container mx-auto px-4 py-12">
         <div class="max-w-6xl mx-auto">
+            <!-- Buttons moved to top right -->
+            <div class="flex justify-end gap-4 mb-8">
+                <a href="/report" class="bg-indigo-600 text-white rounded-full shadow-lg flex items-center px-5 py-3 text-lg font-semibold transition-transform duration-200 hover:scale-105 hover:bg-indigo-700 focus:outline-none">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2a3 3 0 00-3-3H5a3 3 0 00-3 3v2a3 3 0 003 3h1a3 3 0 003-3zm0 0V5a3 3 0 013-3h1a3 3 0 013 3v10m-6 0a3 3 0 003 3h1a3 3 0 003-3m0 0V5a3 3 0 013-3h1a3 3 0 013 3v10a3 3 0 01-3 3h-1a3 3 0 01-3-3z"/>
+                    </svg>
+                    Report
+                </a>
+                <button id="open-history-modal" type="button" class="bg-indigo-600 text-white rounded-full shadow-lg flex items-center px-5 py-3 text-lg font-semibold transition-transform duration-200 hover:scale-105 hover:bg-indigo-700 focus:outline-none">
+                    <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/>
+                    </svg>
+                    History
+                </button>
+            </div>
+
             <div class="text-center mb-12">
                 <h1 class="text-5xl font-bold text-gray-800 mb-4">AI Food Assistant</h1>
                 <p class="text-lg text-gray-600">Upload a food image and let our AI analyze it for you</p>
@@ -191,12 +207,6 @@
             </div>
         </div>
     </div>
-
-    <!-- Floating History Button (now opens modal) -->
-    <button id="open-history-modal" type="button" class="sticky bottom-8 left-8 z-50 bg-indigo-600 text-white rounded-full shadow-lg flex items-center px-5 py-3 text-lg font-semibold transition-transform duration-200 hover:scale-105 hover:bg-indigo-700 focus:outline-none">
-        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
-        History
-    </button>
 
     <!-- History Modal -->
     <div id="history-modal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center" style="z-index:1000;">
