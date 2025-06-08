@@ -2,20 +2,33 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
+import { mkdir } from 'fs/promises';
+import mongoose from 'mongoose';
+import sharp from 'sharp';
+import fs from 'fs';
 
 // __dirname workaround for ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-import { mongoose } from 'mongoose';
-
 const app = express();
 const port = process.env.PORT || 3000;
+
+// Image size constants
+const IMAGE_SIZES = {
+    THUMBNAIL: { width: 200, height: 200 },
+    MEDIUM: { width: 600, height: 600 },
+    LARGE: { width: 1200, height: 1200 }
+};
+
+// Connect to MongoDB
+mongoose.connect('mongodb://localhost:27017/foodassistant')
+    .then(() => console.log('Connected to MongoDB'))
+    .catch(err => console.error('MongoDB connection error:', err));
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
-
 app.use(express.static('public'));
 
 // Set up EJS
@@ -42,10 +55,22 @@ const storage = multer.diskStorage({
 const upload = multer({ 
     storage: storage,
     fileFilter: function (req, file, cb) {
-        if (!file.originalname.match(/\.(jpg|jpeg|png)$/)) {
-            return cb(new Error('Only image files are allowed!'));
+        // Check file type
+        const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png'];
+        if (!allowedTypes.includes(file.mimetype)) {
+            return cb(new Error('Only JPG, JPEG, and PNG images are allowed'));
         }
+        
+        // Check file size (5MB limit)
+        const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+        if (parseInt(req.headers['content-length']) > maxSize) {
+            return cb(new Error('File size should be less than 5MB'));
+        }
+        
         cb(null, true);
+    },
+    limits: {
+        fileSize: 5 * 1024 * 1024 // 5MB in bytes
     }
 });
 
@@ -60,42 +85,122 @@ app.get('/', (req, res) => {
     });
 });
 
-app.post('/upload', upload.single('food-image'), (req, res) => {
+app.post('/upload', upload.single('food-image'), async (req, res) => {
     if (!req.file) {
         return res.status(400).json({ error: 'No file uploaded.' });
     }
 
-    // Simulate AI analysis (replace with actual AI processing)
-    const analysis = {
-        id: Date.now(),
-        filename: req.file.filename,
-        foodName: "Sample Food", // Replace with AI analysis
-        timestamp: new Date(),
-        healthStatus: "Healthy", // Replace with AI analysis
-        nutrition: {
-            calories: 500,
-            protein: 20,
-            carbs: 30
+    try {
+        // Get the uploaded file path
+        const filePath = req.file.path;
+        const timestamp = Date.now();
+        
+        // Process images with fixed sizes
+        const processedImages = await Promise.all([
+            // Thumbnail
+            sharp(filePath)
+                .resize(IMAGE_SIZES.THUMBNAIL.width, IMAGE_SIZES.THUMBNAIL.height, {
+                    fit: 'cover',
+                    position: 'center'
+                })
+                .jpeg({ quality: 80 })
+                .toFile(path.join('uploads', `thumb_${timestamp}.jpg`)),
+            
+            // Medium size
+            sharp(filePath)
+                .resize(IMAGE_SIZES.MEDIUM.width, IMAGE_SIZES.MEDIUM.height, {
+                    fit: 'cover',
+                    position: 'center'
+                })
+                .jpeg({ quality: 85 })
+                .toFile(path.join('uploads', `medium_${timestamp}.jpg`)),
+            
+            // Large size
+            sharp(filePath)
+                .resize(IMAGE_SIZES.LARGE.width, IMAGE_SIZES.LARGE.height, {
+                    fit: 'cover',
+                    position: 'center'
+                })
+                .jpeg({ quality: 90 })
+                .toFile(path.join('uploads', `large_${timestamp}.jpg`))
+        ]).catch(error => {
+            console.error('Error processing images:', error);
+            throw new Error('Failed to process image');
+        });
+
+        // Clean up original file
+        await fs.promises.unlink(filePath).catch(console.error);
+
+        // Simulate AI analysis (replace with actual AI processing)
+        const analysis = {
+            id: timestamp,
+            filename: `large_${timestamp}.jpg`,
+            thumbnail: `thumb_${timestamp}.jpg`,
+            mediumImage: `medium_${timestamp}.jpg`,
+            foodName: "Sample Food", // Replace with AI analysis
+            timestamp: new Date(),
+            healthStatus: "Healthy", // Replace with AI analysis
+            nutrition: {
+                calories: 500,
+                protein: 20,
+                carbs: 30
+            }
+        };
+
+        // Add to history
+        analysisHistory.unshift(analysis);
+        // Keep only last 10 items
+        if (analysisHistory.length > 10) {
+            analysisHistory = analysisHistory.slice(0, 10);
         }
-    };
 
-    // Add to history
-    analysisHistory.unshift(analysis);
-    // Keep only last 10 items
-    if (analysisHistory.length > 10) {
-        analysisHistory = analysisHistory.slice(0, 10);
+        res.json({
+            message: 'File uploaded successfully',
+            analysis: analysis
+        });
+    } catch (error) {
+        console.error('Error processing image:', error);
+        res.status(500).json({ error: error.message || 'Error processing image' });
     }
-
-    res.json({
-        message: 'File uploaded successfully',
-        analysis: analysis
-    });
 });
 
 // Clear history
-app.post('/clear-history', (req, res) => {
-    analysisHistory = [];
-    res.json({ message: 'History cleared successfully' });
+app.post('/clear-history', async (req, res) => {
+    try {
+        // Get all files in the uploads directory
+        const files = await fs.promises.readdir('uploads');
+        
+        // Delete all files in the uploads directory
+        await Promise.all(files.map(file => 
+            fs.promises.unlink(path.join('uploads', file))
+                .catch(err => console.error(`Error deleting file ${file}:`, err))
+        ));
+
+        // Clear the history array
+        analysisHistory = [];
+        
+        res.json({ 
+            message: 'History cleared successfully',
+            filesDeleted: files.length
+        });
+    } catch (error) {
+        console.error('Error clearing history:', error);
+        res.status(500).json({ 
+            error: 'Failed to clear history',
+            details: error.message
+        });
+    }
+});
+
+// Error handling middleware
+app.use((err, req, res, next) => {
+    if (err instanceof multer.MulterError) {
+        if (err.code === 'LIMIT_FILE_SIZE') {
+            return res.status(400).json({ error: 'File size should be less than 5MB' });
+        }
+        return res.status(400).json({ error: err.message });
+    }
+    return res.status(500).json({ error: 'Internal server error' });
 });
 
 app.listen(port, () => {
