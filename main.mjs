@@ -10,6 +10,11 @@ import { OpenAI } from 'openai';
 
 const api_key = process.env.OPENAI_API_KEY;
 
+if (!api_key) {
+    console.error('OPENAI_API_KEY is not set');
+    process.exit(1);
+}
+
 const openai = new OpenAI({
     apiKey: api_key
 });
@@ -142,37 +147,75 @@ app.post('/upload', upload.single('food-image'), async (req, res) => {
         const base64Image = await fs.promises.readFile(imagePath, "base64");
 
         const completion = await openai.chat.completions.create({
-            model: "gpt-4.1-mini", // or "gpt-4-vision-preview" if you have access
-            messages: [{
-                role: "user",
-                content: [
-                    { type: "text", text: "What's in this image? Is it healthy? Provide calories if possible." },
-                    {
-                        type: "image_url",
-                        image_url: {
-                            url: `data:image/jpeg;base64,${base64Image}`,
+            model: "gpt-4.1-mini",
+            messages: [
+                {
+                    role: "system",
+                    content: `
+You are a food nutrition analysis assistant. When given a food image, your job is to identify the food item and estimate its nutritional properties.
+
+Always respond in the following strict JSON format:
+
+{
+  "foodName": "string (e.g., Caesar Salad)",
+  "isHealthy": "yes" | "no" | "unsure",
+  "calories": number (estimated total kcal),
+  "protein": number (grams),
+  "carbs": number (grams),
+  "fat": number (grams),
+  "notes": "short free-text explanation or warning (optional)"
+}
+
+If the image is not of food, or you can't identify any food/meal in the image, do NOT output json, instead just respond with "No food detected."
+
+For the numbers, an estimate is ok based on what you think.
+If you are unsure, still return a complete JSON with best guesses and note uncertainty in the "notes" field.
+Do not include any explanation outside the JSON object.
+`
+                },
+                {
+                    role: "user",
+                    content: [
+                        {
+                            type: "image_url",
+                            image_url: {
+                                url: `data:image/jpeg;base64,${base64Image}`,
+                            },
                         },
-                    },
-                ],
-            }],
+                    ],
+                },
+            ],
         });
 
         const aiDescription = completion.choices[0].message.content || "No response from AI.";
+
+        console.log("AI response:", aiDescription);
+
+        let parsed;
+        try {
+            parsed = JSON.parse(aiDescription);
+        } catch (e) {
+            return res.status(400).json({
+                error: 'Unable to interpret the image as food. Please upload a clear photo of a meal.'
+            });
+        }
 
         const analysis = {
             id: timestamp,
             filename: `large_${timestamp}.jpg`,
             thumbnail: `thumb_${timestamp}.jpg`,
             mediumImage: `medium_${timestamp}.jpg`,
-            foodName: aiDescription.split("\n")[0],  // crude guess for food name
+            foodName: parsed.foodName,
             timestamp: new Date(),
-            healthStatus: aiDescription.includes("healthy") ? "Healthy" : "Unknown",
+            healthStatus: parsed.isHealthy === "yes" ? "Healthy" : "Unhealthy",
             nutrition: {
-                calories: 0,
-                protein: 0,
-                carbs: 0
+                calories: parsed.calories,
+                protein: parsed.protein,
+                carbs: parsed.carbs,
+                fat: parsed.fat
             },
-            rawDescription: aiDescription // optional: show full AI reply
+            notes: parsed.notes,
+            rawDescription: aiDescription
         };
 
         // Add to history
