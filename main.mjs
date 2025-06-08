@@ -147,7 +147,7 @@ app.post('/upload', upload.single('food-image'), async (req, res) => {
         const base64Image = await fs.promises.readFile(imagePath, "base64");
 
         const completion = await openai.chat.completions.create({
-            model: "gpt-4.1-mini",
+            model: "gpt-4.1-nano",
             messages: [
                 {
                     role: "system",
