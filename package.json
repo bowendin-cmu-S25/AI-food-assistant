@@ -19,6 +19,8 @@
   },
   "homepage": "https://github.com/bowendin-cmu-S25/AI-food-assistant#readme",
   "dependencies": {
-    "express": "^5.1.0"
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "mongoose": "^8.15.1"
   }
 }
