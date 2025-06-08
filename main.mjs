@@ -12,14 +12,14 @@ const api_key = process.env.OPENAI_API_KEY;
 const useMongoDB = process.env.USE_MONGODB !== 'false';
 const useAI = process.env.USE_AI !== 'false';
 
-if (!api_key) {
-    console.error('OPENAI_API_KEY is not set');
-    process.exit(1);
-}
-
 if (useAI && !api_key) {
     console.warn('USE_AI is set to true, but OPENAI_API_KEY is not set. AI analysis will be skipped.');
     useAI = false;
+}
+
+if (!api_key) {
+    console.error('OPENAI_API_KEY is not set');
+    process.exit(1);
 }
 
 const openai = new OpenAI({
