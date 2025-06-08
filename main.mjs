@@ -2,10 +2,12 @@ import express from 'express';
 import multer from 'multer';
 import path from 'path';
 import { fileURLToPath } from 'url';
-import { mkdir } from 'fs/promises';
 
+// __dirname workaround for ESM
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
+
+import { mongoose } from 'mongoose';
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -13,6 +15,7 @@ const port = process.env.PORT || 3000;
 // Middleware
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
+
 app.use(express.static('public'));
 
 // Set up EJS
