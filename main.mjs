@@ -280,6 +280,6 @@ app.use((err, req, res, next) => {
     return res.status(500).json({ error: 'Internal server error' });
 });
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
