@@ -42,6 +42,7 @@ mongoose.connect('mongodb://localhost:27017/foodassistant')
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 app.use(express.static('public'));
+app.use('/uploads', express.static('uploads'));
 
 // Set up EJS
 app.set('view engine', 'ejs');
