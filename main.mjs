@@ -294,6 +294,25 @@ app.get('/history', (req, res) => {
     });
 });
 
+// Add report route
+app.get('/report', (req, res) => {
+    const history = analysisHistory || [];
+    
+    // Calculate totals
+    const totals = history.reduce((acc, item) => {
+        acc.calories += item.nutrition.calories || 0;
+        acc.protein += item.nutrition.protein || 0;
+        acc.carbs += item.nutrition.carbs || 0;
+        acc.fat += item.nutrition.fat || 0;
+        return acc;
+    }, { calories: 0, protein: 0, carbs: 0, fat: 0 });
+
+    res.render('report', {
+        history: history,
+        totals: totals
+    });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {
