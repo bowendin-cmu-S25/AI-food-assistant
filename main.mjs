@@ -10,21 +10,20 @@ import { OpenAI } from 'openai';
 
 const api_key = process.env.OPENAI_API_KEY;
 const useMongoDB = process.env.USE_MONGODB !== 'false';
-const useAI = process.env.USE_AI !== 'false';
+let useAI = process.env.USE_AI !== 'false';
 
 if (useAI && !api_key) {
     console.warn('USE_AI is set to true, but OPENAI_API_KEY is not set. AI analysis will be skipped.');
     useAI = false;
 }
 
-if (!api_key) {
-    console.error('OPENAI_API_KEY is not set');
-    process.exit(1);
-}
+let openai;
 
-const openai = new OpenAI({
-    apiKey: api_key
-});
+if (useAI) {
+    openai = new OpenAI({
+        apiKey: api_key
+    });
+}
 
 // __dirname workaround for ESM
 const __filename = fileURLToPath(import.meta.url);
