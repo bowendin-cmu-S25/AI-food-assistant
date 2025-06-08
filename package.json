@@ -6,6 +6,7 @@
   "type": "module",
   "scripts": {
     "start": "node main.mjs",
+    "clean": "rm -f uploads/*",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
