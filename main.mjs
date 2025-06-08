@@ -9,6 +9,8 @@ import fs from 'fs';
 import { OpenAI } from 'openai';
 
 const api_key = process.env.OPENAI_API_KEY;
+const useMongoDB = process.env.USE_MONGODB !== 'false';
+const useAI = process.env.USE_AI !== 'false';
 
 if (!api_key) {
     console.error('OPENAI_API_KEY is not set');
@@ -34,9 +36,14 @@ const IMAGE_SIZES = {
 };
 
 // Connect to MongoDB
-mongoose.connect('mongodb://localhost:27017/foodassistant')
-    .then(() => console.log('Connected to MongoDB'))
-    .catch(err => console.error('MongoDB connection error:', err));
+if (useMongoDB) {
+    console.log("Using MongoDB");
+    mongoose.connect('mongodb://localhost:27017/foodassistant')
+        .then(() => console.log('Connected to MongoDB'))
+        .catch(err => console.error('MongoDB connection error:', err));
+} else {
+    console.log('MongoDB connection skipped (USE_MONGODB is false)');
+}
 
 // Middleware
 app.use(express.urlencoded({ extended: true }));
@@ -147,12 +154,14 @@ app.post('/upload', upload.single('food-image'), async (req, res) => {
         const imagePath = path.join('uploads', `large_${timestamp}.jpg`);
         const base64Image = await fs.promises.readFile(imagePath, "base64");
 
-        const completion = await openai.chat.completions.create({
-            model: "gpt-4.1-nano",
-            messages: [
-                {
-                    role: "system",
-                    content: `
+        let aiDescription;
+        if (useAI) {
+            const completion = await openai.chat.completions.create({
+                model: "gpt-4.1-nano",
+                messages: [
+                    {
+                        role: "system",
+                        content: `
 You are a food nutrition analysis assistant. When given a food image, your job is to identify the food item and estimate its nutritional properties.
 
 Always respond in the following strict JSON format:
@@ -173,22 +182,33 @@ For the numbers, an estimate is ok based on what you think.
 If you are unsure, still return a complete JSON with best guesses and note uncertainty in the "notes" field.
 Do not include any explanation outside the JSON object.
 `
-                },
-                {
-                    role: "user",
-                    content: [
-                        {
-                            type: "image_url",
-                            image_url: {
-                                url: `data:image/jpeg;base64,${base64Image}`,
+                    },
+                    {
+                        role: "user",
+                        content: [
+                            {
+                                type: "image_url",
+                                image_url: {
+                                    url: `data:image/jpeg;base64,${base64Image}`,
+                                },
                             },
-                        },
-                    ],
-                },
-            ],
-        });
-
-        const aiDescription = completion.choices[0].message.content || "No response from AI.";
+                        ],
+                    },
+                ],
+            });
+            aiDescription = completion.choices[0].message.content || "No response from AI.";
+        } else {
+            console.log("AI analysis skipped (USE_AI is false)");
+            aiDescription = JSON.stringify({
+                foodName: "Sample Food",
+                isHealthy: "yes",
+                calories: 250,
+                protein: 10,
+                carbs: 30,
+                fat: 8,
+                notes: "This is a mock response for development."
+            });
+        }
 
         console.log("AI response:", aiDescription);
 
