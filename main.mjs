@@ -17,6 +17,11 @@ if (!api_key) {
     process.exit(1);
 }
 
+if (useAI && !api_key) {
+    console.warn('USE_AI is set to true, but OPENAI_API_KEY is not set. AI analysis will be skipped.');
+    useAI = false;
+}
+
 const openai = new OpenAI({
     apiKey: api_key
 });
