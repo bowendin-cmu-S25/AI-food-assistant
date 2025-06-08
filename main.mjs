@@ -288,12 +288,6 @@ app.post('/clear-history', async (req, res) => {
     }
 });
 
-app.get('/history', (req, res) => {
-    res.render('history', {
-        history: analysisHistory || []
-    });
-});
-
 // Add report route
 app.get('/report', (req, res) => {
     const history = analysisHistory || [];
