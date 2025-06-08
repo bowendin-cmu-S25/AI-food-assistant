@@ -207,7 +207,7 @@ Do not include any explanation outside the JSON object.
             mediumImage: `medium_${timestamp}.jpg`,
             foodName: parsed.foodName,
             timestamp: new Date(),
-            healthStatus: parsed.isHealthy === "yes" ? "Healthy" : "Unhealthy",
+            healthStatus: parsed.isHealthy === "yes" ? "Healthy" : parsed.isHealthy === "no" ? "Unhealthy" : "Unsure",
             nutrition: {
                 calories: parsed.calories,
                 protein: parsed.protein,
