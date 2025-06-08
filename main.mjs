@@ -192,6 +192,12 @@ app.post('/clear-history', async (req, res) => {
     }
 });
 
+app.get('/history', (req, res) => {
+    res.render('history', {
+        history: analysisHistory || []
+    });
+});
+
 // Error handling middleware
 app.use((err, req, res, next) => {
     if (err instanceof multer.MulterError) {

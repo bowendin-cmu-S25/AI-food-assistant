@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Analysis History</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@700;400&display=swap" rel="stylesheet">
+    <link href="/css/styles.css" rel="stylesheet">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+</head>
+<body class="bg-gray-100 min-h-screen flex flex-col items-center justify-start">
+    <div class="w-full max-w-3xl mt-10 p-8 bg-white rounded-3xl shadow-lg">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-3xl font-bold text-gray-800">Analysis History</h2>
+            <div>
+                <a href="/" class="text-indigo-500 hover:underline mr-4">&larr; Back</a>
+                <button id="clear-history-btn" class="text-indigo-500 hover:text-indigo-700 focus:outline-none flex items-center">
+                    Clear All <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+        </div>
+        <div class="history-section">
+            <% if (history && history.length > 0) { %>
+                <% history.forEach(function(item) { %>
+                    <div class="history-card flex items-center p-4 mb-4 bg-gray-50 rounded-xl shadow-sm transition-all">
+                        <div class="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 mr-4 bg-gray-200 flex items-center justify-center">
+                            <img src="/uploads/<%= item.thumbnail %>" alt="<%= item.foodName %>" class="w-full h-full object-cover" onerror="this.src='/img/placeholder.png'">
+                        </div>
+                        <div class="flex-1">
+                            <div class="flex items-center justify-between">
+                                <span class="font-bold text-lg text-gray-800"><%= item.foodName %></span>
+                                <span class="ml-2 px-3 py-1 rounded-full text-xs font-semibold <%= item.healthStatus === 'Healthy' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700' %>"><%= item.healthStatus %></span>
+                            </div>
+                            <div class="text-gray-500 text-sm mt-1">Analyzed <%= item.timestamp.toLocaleString ? item.timestamp.toLocaleString() : item.timestamp %></div>
+                            <div class="text-gray-700 text-sm mt-1">Calories: <%= item.nutrition.calories %> | Protein: <%= item.nutrition.protein %>g | Carbs: <%= item.nutrition.carbs %>g</div>
+                        </div>
+                    </div>
+                <% }) %>
+            <% } else { %>
+                <div class="history-empty text-center text-gray-400 py-12 fade-in">
+                    <svg class="mx-auto mb-4 w-16 h-16 text-gray-300" fill="none" stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6v6l4 2"/></svg>
+                    <div class="text-lg font-semibold">No analysis history yet.</div>
+                    <div class="text-sm">Upload an image to get started!</div>
+                </div>
+            <% } %>
+        </div>
+    </div>
+    <script src="/js/main.js"></script>
+    <script>
+        // Attach clear history event for this page
+        document.getElementById('clear-history-btn')?.addEventListener('click', () => {
+            pendingAction = 'clearHistory';
+            showModal(
+                'Clear History',
+                'Are you sure you want to clear all analysis history? This action cannot be undone.',
+                true
+            );
+        });
+    </script>
+</body>
+</html> 

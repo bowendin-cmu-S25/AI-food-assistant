@@ -10,7 +10,7 @@
 </head>
 <body class="min-h-screen">
     <!-- Modal -->
-    <div id="modal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center z-50">
+    <div id="modal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center" style="z-index:9999;">
         <div class="modal-content bg-white rounded-xl p-6 max-w-md w-full mx-4">
             <div class="flex items-center justify-between mb-4">
                 <h3 id="modal-title" class="text-xl font-semibold text-gray-800"></h3>
@@ -104,50 +104,63 @@
                     </form>
                 </div>
 
-                <!-- History Section -->
+                <!-- Food Details Section (replaces Analysis History) -->
                 <div class="bg-white rounded-2xl shadow-xl p-8">
-                    <div class="flex justify-between items-center mb-6">
-                        <h2 class="text-2xl font-semibold text-gray-800">Analysis History</h2>
-                        <button class="text-indigo-500 hover:text-indigo-600 text-sm font-medium flex items-center space-x-1">
-                            <span>Clear All</span>
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                            </svg>
-                        </button>
+                    <div class="flex items-center justify-between mb-6">
+                        <h2 class="text-3xl font-bold text-gray-800">Food Details</h2>
                     </div>
-
-                    <div class="space-y-4 max-h-[600px] overflow-y-auto pr-2">
+                    <div>
                         <% if (typeof history !== 'undefined' && history && history.length > 0) { %>
-                            <% history.forEach(item => { %>
-                                <div class="history-card bg-gray-50 rounded-xl p-4 flex items-start space-x-4">
-                                    <div class="w-[200px] h-[200px] rounded-lg overflow-hidden">
-                                        <img src="/uploads/<%= item.thumbnail %>" alt="<%= item.foodName %>" class="w-full h-full object-cover">
-                                    </div>
-                                    <div class="flex-1">
-                                        <div class="flex justify-between items-start">
-                                            <div>
-                                                <h3 class="font-medium text-gray-800"><%= item.foodName %></h3>
-                                                <p class="text-sm text-gray-500">Analyzed <%= new Date(item.timestamp).toLocaleString() %></p>
-                                            </div>
-                                            <span class="px-2 py-1 <%= item.healthStatus === 'Healthy' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' %> text-xs rounded-full">
+                            <% const item = history[0]; %>
+                            <div class="flex flex-col md:flex-row items-center md:items-start gap-8">
+                                <div class="w-[200px] h-[200px] rounded-2xl overflow-hidden shadow-md flex-shrink-0 bg-gray-100 flex items-center justify-center">
+                                    <img src="/uploads/<%= item.thumbnail %>" alt="<%= item.foodName %>" class="w-full h-full object-cover">
+                                </div>
+                                <div class="flex-1 w-full">
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+                                        <div class="flex items-center gap-3">
+                                            <h3 class="font-bold text-2xl text-gray-800"><%= item.foodName %></h3>
+                                            <span class="px-3 py-1 rounded-full text-xs font-semibold <%= item.healthStatus === 'Healthy' ? 'bg-green-100 text-green-700' : 'bg-yellow-100 text-yellow-800' %>">
                                                 <%= item.healthStatus %>
                                             </span>
                                         </div>
-                                        <p class="text-sm text-gray-600 mt-2">
-                                            Calories: <%= item.nutrition.calories %> | 
-                                            Protein: <%= item.nutrition.protein %>g | 
-                                            Carbs: <%= item.nutrition.carbs %>g
-                                        </p>
+                                        <div class="text-gray-500 text-sm mt-1 sm:mt-0">
+                                            <svg class="inline w-4 h-4 mr-1 text-gray-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                            <%= new Date(item.timestamp).toLocaleString() %>
+                                        </div>
+                                    </div>
+                                    <div class="mt-6 grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                        <div class="flex items-center bg-indigo-50 rounded-xl px-4 py-3 shadow-sm">
+                                            <svg class="w-6 h-6 text-indigo-400 mr-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 8c-1.657 0-3 1.343-3 3s1.343 3 3 3 3-1.343 3-3-1.343-3-3-3zm0 0V4m0 8v8"/></svg>
+                                            <div>
+                                                <div class="text-sm text-gray-500">Calories</div>
+                                                <div class="font-semibold text-lg text-gray-800"><%= item.nutrition.calories %></div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center bg-green-50 rounded-xl px-4 py-3 shadow-sm">
+                                            <svg class="w-6 h-6 text-green-400 mr-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17v-2a4 4 0 018 0v2"/></svg>
+                                            <div>
+                                                <div class="text-sm text-gray-500">Protein</div>
+                                                <div class="font-semibold text-lg text-gray-800"><%= item.nutrition.protein %>g</div>
+                                            </div>
+                                        </div>
+                                        <div class="flex items-center bg-yellow-50 rounded-xl px-4 py-3 shadow-sm">
+                                            <svg class="w-6 h-6 text-yellow-400 mr-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M16 17v-1a4 4 0 00-8 0v1"/></svg>
+                                            <div>
+                                                <div class="text-sm text-gray-500">Carbs</div>
+                                                <div class="font-semibold text-lg text-gray-800"><%= item.nutrition.carbs %>g</div>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
-                            <% }); %>
+                            </div>
                         <% } else { %>
                             <div class="text-center py-8 text-gray-500">
                                 <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
                                 </svg>
-                                <p class="mt-2">No analysis history yet</p>
-                                <p class="text-sm">Upload an image to see your analysis history here</p>
+                                <p class="mt-2">No analysis yet</p>
+                                <p class="text-sm">Upload an image to see food details here</p>
                             </div>
                         <% } %>
                     </div>
@@ -160,6 +173,104 @@
         </div>
     </div>
 
+    <!-- Floating History Button (now opens modal) -->
+    <button id="open-history-modal" type="button" class="fixed bottom-8 right-8 z-50 bg-indigo-600 text-white rounded-full shadow-lg flex items-center px-5 py-3 text-lg font-semibold transition-transform duration-200 hover:scale-105 hover:bg-indigo-700 focus:outline-none">
+        <svg class="w-6 h-6 mr-2" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+        History
+    </button>
+
+    <!-- History Modal -->
+    <div id="history-modal" class="modal fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center" style="z-index:1000;">
+        <div class="modal-content bg-white rounded-2xl p-8 max-w-2xl w-full mx-4 relative">
+            <button id="close-history-modal" class="absolute top-4 right-4 text-gray-400 hover:text-gray-600">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+            <div class="flex items-center justify-between mb-6">
+                <h2 class="text-2xl font-bold text-gray-800">Analysis History</h2>
+                <button id="clear-history-btn-modal" class="text-indigo-500 hover:text-indigo-700 focus:outline-none flex items-center">
+                    Clear All <svg class="w-5 h-5 ml-1" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M6 18L18 6M6 6l12 12"/></svg>
+                </button>
+            </div>
+            <div class="history-section max-h-[400px] overflow-y-auto pr-2">
+                <% if (typeof history !== 'undefined' && history && history.length > 0) { %>
+                    <% history.forEach(item => { %>
+                        <div class="history-card bg-gray-50 rounded-xl p-4 flex items-start space-x-4 mb-4">
+                            <div class="w-[80px] h-[80px] rounded-lg overflow-hidden">
+                                <img src="/uploads/<%= item.thumbnail %>" alt="<%= item.foodName %>" class="w-full h-full object-cover">
+                            </div>
+                            <div class="flex-1">
+                                <div class="flex justify-between items-start">
+                                    <div>
+                                        <h3 class="font-medium text-gray-800"><%= item.foodName %></h3>
+                                        <p class="text-sm text-gray-500">Analyzed <%= new Date(item.timestamp).toLocaleString() %></p>
+                                    </div>
+                                    <span class="px-2 py-1 <%= item.healthStatus === 'Healthy' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800' %> text-xs rounded-full">
+                                        <%= item.healthStatus %>
+                                    </span>
+                                </div>
+                                <p class="text-sm text-gray-600 mt-2">
+                                    Calories: <%= item.nutrition.calories %> | 
+                                    Protein: <%= item.nutrition.protein %>g | 
+                                    Carbs: <%= item.nutrition.carbs %>g
+                                </p>
+                            </div>
+                        </div>
+                    <% }); %>
+                <% } else { %>
+                    <div class="text-center py-8 text-gray-500">
+                        <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 13V6a2 2 0 00-2-2H6a2 2 0 00-2 2v7m16 0v5a2 2 0 01-2 2H6a2 2 0 01-2-2v-5m16 0h-2.586a1 1 0 00-.707.293l-2.414 2.414a1 1 0 01-.707.293h-3.172a1 1 0 01-.707-.293l-2.414-2.414A1 1 0 006.586 13H4" />
+                        </svg>
+                        <p class="mt-2">No analysis history yet</p>
+                        <p class="text-sm">Upload an image to see your analysis history here</p>
+                    </div>
+                <% } %>
+            </div>
+        </div>
+    </div>
+
     <script src="/js/main.js"></script>
+    <script>
+    // Modal open/close logic for history
+    const openHistoryModalBtn = document.getElementById('open-history-modal');
+    const historyModal = document.getElementById('history-modal');
+    const closeHistoryModalBtn = document.getElementById('close-history-modal');
+    const modal = document.getElementById('modal');
+
+    openHistoryModalBtn?.addEventListener('click', () => {
+        historyModal.classList.remove('hidden');
+        historyModal.classList.add('flex');
+        setTimeout(() => historyModal.classList.add('active'), 10);
+    });
+    closeHistoryModalBtn?.addEventListener('click', () => {
+        historyModal.classList.remove('active');
+        setTimeout(() => {
+            historyModal.classList.remove('flex');
+            historyModal.classList.add('hidden');
+        }, 300);
+    });
+    // Optional: close modal on background click
+    historyModal?.addEventListener('click', (e) => {
+        if (e.target === historyModal) {
+            historyModal.classList.remove('active');
+            setTimeout(() => {
+                historyModal.classList.remove('flex');
+                historyModal.classList.add('hidden');
+            }, 300);
+        }
+    });
+    // Attach clear history event for modal
+    const clearHistoryBtnModal = document.getElementById('clear-history-btn-modal');
+    clearHistoryBtnModal?.addEventListener('click', () => {
+        pendingAction = 'clearHistory';
+        showModal(
+            'Clear History',
+            'Are you sure you want to clear all analysis history? This action cannot be undone.',
+            true
+        );
+    });
+    </script>
 </body>
 </html> 
