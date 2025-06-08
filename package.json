@@ -1,0 +1,21 @@
+{
+  "name": "ai-food-assistant",
+  "version": "1.0.0",
+  "description": "",
+  "main": "main.mjs",
+  "type": "module",
+  "scripts": {
+    "start": "node main.mjs",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/bowendin-cmu-S25/AI-food-assistant.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/bowendin-cmu-S25/AI-food-assistant/issues"
+  },
+  "homepage": "https://github.com/bowendin-cmu-S25/AI-food-assistant#readme"
+}
