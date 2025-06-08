@@ -148,7 +148,7 @@ app.post('/upload', upload.single('food-image'), async (req, res) => {
         const base64Image = await fs.promises.readFile(imagePath, "base64");
 
         const completion = await openai.chat.completions.create({
-            model: "gpt-4.1-mini",
+            model: "gpt-4.1-nano",
             messages: [
                 {
                     role: "system",
@@ -281,6 +281,6 @@ app.use((err, req, res, next) => {
     return res.status(500).json({ error: 'Internal server error' });
 });
 
-app.listen(port, () => {
+app.listen(port, '0.0.0.0', () => {
     console.log(`Server is running on http://localhost:${port}`);
 });
