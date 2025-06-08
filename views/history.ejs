@@ -24,7 +24,7 @@
                 <% history.forEach(function(item) { %>
                     <div class="history-card flex items-center p-4 mb-4 bg-gray-50 rounded-xl shadow-sm transition-all">
                         <div class="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 mr-4 bg-gray-200 flex items-center justify-center">
-                            <img src="/uploads/<%= item.thumbnail %>" alt="<%= item.foodName %>" class="w-full h-full object-cover" onerror="this.src='/img/placeholder.png'">
+                            <img src="/uploads/<%= item.thumbnail %>" alt="<%= item.foodName %>" class="max-w-[80px] w-full h-auto object-contain" onerror="this.src='/img/placeholder.png'">
                         </div>
                         <div class="flex-1">
                             <div class="flex items-center justify-between">
