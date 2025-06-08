@@ -1,20 +1,30 @@
 import express from 'express';
-import { mongoose } from 'mongoose';
+import multer from 'multer';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import { mkdir } from 'fs/promises';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 const app = express();
-app.use(express.urlencoded({ extended: true }));
-app.use(express.json());
-
-app.set('views', path.join(__dirname, 'views'));
-app.set('view engine', 'ejs');
-
-app.use(express.static('public'));
-
 const port = process.env.PORT || 3000;
 
-// Set up EJS as the view engine
+// Middleware
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
+app.use(express.static('public'));
+
+// Set up EJS
 app.set('view engine', 'ejs');
 app.set('views', path.join(__dirname, 'views'));
+
+// Create uploads directory if it doesn't exist
+try {
+    await mkdir('uploads', { recursive: true });
+} catch (err) {
+    if (err.code !== 'EEXIST') throw err;
+}
 
 // Set up multer for file uploads
 const storage = multer.diskStorage({
@@ -36,32 +46,53 @@ const upload = multer({
     }
 });
 
-// Create uploads directory if it doesn't exist
-import { mkdir } from 'fs/promises';
-try {
-    await mkdir('uploads', { recursive: true });
-} catch (err) {
-    if (err.code !== 'EEXIST') throw err;
-}
-
-// Serve static files
-app.use(express.static('public'));
+// In-memory storage for history (replace with database in production)
+let analysisHistory = [];
 
 // Routes
 app.get('/', (req, res) => {
-    res.render('index');
+    // Pass the history array to the template
+    res.render('index', { 
+        history: analysisHistory || [] 
+    });
 });
 
 app.post('/upload', upload.single('food-image'), (req, res) => {
     if (!req.file) {
-        return res.status(400).send('No file uploaded.');
+        return res.status(400).json({ error: 'No file uploaded.' });
     }
-    // Here you would typically process the image with your AI model
-    // For now, we'll just send back a success message
+
+    // Simulate AI analysis (replace with actual AI processing)
+    const analysis = {
+        id: Date.now(),
+        filename: req.file.filename,
+        foodName: "Sample Food", // Replace with AI analysis
+        timestamp: new Date(),
+        healthStatus: "Healthy", // Replace with AI analysis
+        nutrition: {
+            calories: 500,
+            protein: 20,
+            carbs: 30
+        }
+    };
+
+    // Add to history
+    analysisHistory.unshift(analysis);
+    // Keep only last 10 items
+    if (analysisHistory.length > 10) {
+        analysisHistory = analysisHistory.slice(0, 10);
+    }
+
     res.json({
         message: 'File uploaded successfully',
-        filename: req.file.filename
+        analysis: analysis
     });
+});
+
+// Clear history
+app.post('/clear-history', (req, res) => {
+    analysisHistory = [];
+    res.json({ message: 'History cleared successfully' });
 });
 
 app.listen(port, () => {
