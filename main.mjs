@@ -6,6 +6,13 @@ import { mkdir } from 'fs/promises';
 import mongoose from 'mongoose';
 import sharp from 'sharp';
 import fs from 'fs';
+import { OpenAI } from 'openai';
+
+const api_key = process.env.OPENAI_API_KEY;
+
+const openai = new OpenAI({
+    apiKey: api_key
+});
 
 // __dirname workaround for ESM
 const __filename = fileURLToPath(import.meta.url);
@@ -131,20 +138,41 @@ app.post('/upload', upload.single('food-image'), async (req, res) => {
         // Clean up original file
         await fs.promises.unlink(filePath).catch(console.error);
 
-        // Simulate AI analysis (replace with actual AI processing)
+        const imagePath = path.join('uploads', `large_${timestamp}.jpg`);
+        const base64Image = await fs.promises.readFile(imagePath, "base64");
+
+        const completion = await openai.chat.completions.create({
+            model: "gpt-4.1-mini", // or "gpt-4-vision-preview" if you have access
+            messages: [{
+                role: "user",
+                content: [
+                    { type: "text", text: "What's in this image? Is it healthy? Provide calories if possible." },
+                    {
+                        type: "image_url",
+                        image_url: {
+                            url: `data:image/jpeg;base64,${base64Image}`,
+                        },
+                    },
+                ],
+            }],
+        });
+
+        const aiDescription = completion.choices[0].message.content || "No response from AI.";
+
         const analysis = {
             id: timestamp,
             filename: `large_${timestamp}.jpg`,
             thumbnail: `thumb_${timestamp}.jpg`,
             mediumImage: `medium_${timestamp}.jpg`,
-            foodName: "Sample Food", // Replace with AI analysis
+            foodName: aiDescription.split("\n")[0],  // crude guess for food name
             timestamp: new Date(),
-            healthStatus: "Healthy", // Replace with AI analysis
+            healthStatus: aiDescription.includes("healthy") ? "Healthy" : "Unknown",
             nutrition: {
-                calories: 500,
-                protein: 20,
-                carbs: 30
-            }
+                calories: 0,
+                protein: 0,
+                carbs: 0
+            },
+            rawDescription: aiDescription // optional: show full AI reply
         };
 
         // Add to history
